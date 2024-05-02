@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-top-level-await */
 import {
   ClassSerializerInterceptor,
   HttpStatus,

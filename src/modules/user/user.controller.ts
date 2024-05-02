@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Query,
+  Request,
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -52,6 +56,17 @@ export class UserController {
     pageOptionsDto: UsersPageOptionsDto,
   ): Promise<PageDto<UserDto>> {
     return this.userService.getUsers(pageOptionsDto);
+  }
+
+  @Get('my-movies')
+  @Auth([RoleType.USER])
+  @HttpCode(HttpStatus.OK)
+  @ApiPageOkResponse({
+    description: 'Get users list',
+    type: PageDto,
+  })
+  getUserMovies(@Request() req): Promise<any> {
+    return this.userService.getUserMovies(req.user.id);
   }
 
   @Get(':id')

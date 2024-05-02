@@ -3,12 +3,13 @@ import { Column, Entity, OneToMany, OneToOne, VirtualColumn } from 'typeorm';
 import { AbstractEntity } from '../../common/abstract.entity';
 import { RoleType } from '../../constants';
 import { UseDto } from '../../decorators';
-import { PostEntity } from '../post/post.entity';
+import { CommentEntity } from './../comment/comment.entity';
+import { UserMovieEntity } from './../user-movie/user-movie.entity';
 import { UserDto, type UserDtoOptions } from './dtos/user.dto';
 import { UserSettingsEntity } from './user-settings.entity';
 
-@Entity({ name: 'users' })
 @UseDto(UserDto)
+@Entity({ name: 'users' })
 export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   @Column({ nullable: true, type: 'varchar' })
   firstName!: string | null;
@@ -40,6 +41,9 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   @OneToOne(() => UserSettingsEntity, (userSettings) => userSettings.user)
   settings?: UserSettingsEntity;
 
-  @OneToMany(() => PostEntity, (postEntity) => postEntity.user)
-  posts?: PostEntity[];
+  @OneToMany(() => UserMovieEntity, (userMovies) => userMovies.user)
+  userMovies!: UserMovieEntity[];
+
+  @OneToMany(() => CommentEntity, (comment) => comment.user)
+  comments!: CommentEntity[];
 }

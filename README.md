@@ -8,7 +8,6 @@
 
 ```bash
 # 1. Clone the repository or click on "Use this template" button.
-npx degit NarHakobyan/awesome-nest-boilerplate my-nest-app
 
 # 2. Enter your newly-cloned folder.
 cd my-nest-app
@@ -31,8 +30,8 @@ When you use this template, try follow the checklist to update your info properl
 
 And, enjoy :)
 
-
 ### Development
+
 ```bash
 # 4. Run development server and open http://localhost:3000
 yarn start:dev

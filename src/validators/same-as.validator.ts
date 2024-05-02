@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { registerDecorator, type ValidationOptions } from 'class-validator';
 
 export function SameAs(
@@ -13,6 +14,7 @@ export function SameAs(
       constraints: [property],
       validator: {
         validate(value, args) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const [relatedPropertyName] = args!.constraints;
 
           return args?.object[relatedPropertyName] === value;

@@ -1,11 +1,17 @@
+import { ErrorMessages } from '../../../constants';
 import {
   EmailField,
-  PasswordField,
+  IsStrongPassword,
   PhoneFieldOptional,
   StringField,
 } from '../../../decorators';
 
 export class UserRegisterDto {
+  @IsStrongPassword({
+    message: ErrorMessages.STRONG_PASSWORD,
+  })
+  readonly password!: string;
+
   @StringField()
   readonly firstName!: string;
 
@@ -14,9 +20,6 @@ export class UserRegisterDto {
 
   @EmailField()
   readonly email!: string;
-
-  @PasswordField({ minLength: 6 })
-  readonly password!: string;
 
   @PhoneFieldOptional()
   phone?: string;

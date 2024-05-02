@@ -4,32 +4,32 @@ unless_exists: true
 skip_if: <%= !blocks.includes('Controller') %>
 ---
 <%
+  ClassName = h.ClassName(name);
+  ControllerName = h.ControllerName(name);
+  ServiceName = h.ServiceName(name);
+  serviceName = h.changeCase.camel(ServiceName);
 
- ClassName = h.ClassName(name);
- moduleName = h.moduleName(name);
- fileName = h.fileName(name);
- ControllerName = h.ControllerName(name);
- ServiceName = h.ServiceName(name);
- serviceName = h.changeCase.camel(ServiceName);
- createFunctionName = 'create' + ClassName;
- updateFunctionName = 'update' + ClassName;
- deleteFunctionName = 'delete' + ClassName;
- getAllFunctionName = 'getAll' + ClassName;
- getSingleFunctionName = 'getSingle' + ClassName;
- CreateDtoName = h.CreateDtoName(name);
- createDtoName = h.changeCase.camel(CreateDtoName);
- UpdateDtoName = h.UpdateDtoName(name);
- updateDtoName = h.changeCase.camel(UpdateDtoName);
- PageOptionsDtoName = h.PageOptionsDtoName(name);
- pageOptionsDtoName = h.changeCase.camel(PageOptionsDtoName);
- DtoName = h.DtoName(name);
- createDtoFileName = h.createDtoFileName(name);
- dtoFileName = h.dtoFileName(name);
- pageOptionsDtoFileName = h.pageOptionsDtoFileName(name);
- updateDtoFileName = h.updateDtoFileName(name);
- serviceFileName = h.serviceFileName(name);
+  CreateDtoName = h.CreateDtoName(name);
+  createDtoName = h.changeCase.camel(CreateDtoName);
 
-%>import {
+  UpdateDtoName = h.UpdateDtoName(name);
+  updateDtoName = h.changeCase.camel(UpdateDtoName);
+
+  DtoName = h.DtoName(name);
+
+  PageOptionsDtoName = h.PageOptionsDtoName(name);
+  pageOptionsDtoName = h.changeCase.camel(PageOptionsDtoName);
+
+  createFunctionName = 'create' + ClassName;
+  updateFunctionName = 'update' + ClassName;
+  deleteFunctionName = 'delete' + ClassName;
+  getAllFunctionName = 'getAll' + ClassName;
+  getSingleFunctionName = 'getSingle' + ClassName;
+
+  pluralizedName = h.inflection.pluralize(h.fileName(name).toLowerCase());
+%>
+
+import {
   Body,
   Controller,
   Delete,
@@ -40,22 +40,23 @@ skip_if: <%= !blocks.includes('Controller') %>
   Put,
   Query,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import type { PageDto } from '../../common/dto/page.dto';
 import { Auth, UUIDParam } from '../../decorators';
-import { <%= CreateDtoName %> } from './dtos/<%= createDtoFileName %>';
-import type { <%= DtoName %> } from './dtos/<%= dtoFileName %>';
-import { <%= PageOptionsDtoName %> } from './dtos/<%= pageOptionsDtoFileName %>';
-import { <%= UpdateDtoName %> } from './dtos/<%= updateDtoFileName %>';
-import { <%= ServiceName %> } from './<%= serviceFileName %>';
+import { <%= ServiceName %> } from './<%= h.serviceFileName(name) %>';
+import type { <%= DtoName %> } from './dtos/<%= h.dtoFileName(name) %>';
+import { <%= PageOptionsDtoName %> } from './dtos/<%= h.pageOptionsDtoFileName(name) %>';
+import { <%= CreateDtoName %> } from './dtos/<%= h.createDtoFileName(name) %>';
+import { <%= UpdateDtoName %> } from './dtos/<%= h.updateDtoFileName(name) %>';
 
-@Controller('<%= h.inflection.pluralize(fileName).toLowerCase() %>')
-@ApiTags('<%= h.inflection.pluralize(fileName).toLowerCase() %>')
+@Controller('<%= pluralizedName %>')
+@ApiTags('<%= pluralizedName %>')
 export class <%= ControllerName %> {
   constructor(private <%= serviceName %>: <%= ServiceName %>) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a <%= ClassName.toLowerCase() %>' })
   @Auth([])
   @HttpCode(HttpStatus.CREATED)
   async <%= createFunctionName %>(@Body() <%= createDtoName %>: <%= CreateDtoName %>) {
@@ -65,6 +66,7 @@ export class <%= ControllerName %> {
   }
 
   @Get()
+  @ApiOperation({ summary: 'List all <%= pluralizedName %> with pagination' })
   @Auth([])
   @HttpCode(HttpStatus.OK)
   <%= getAllFunctionName %>(@Query() <%= pageOptionsDtoName %>: <%= PageOptionsDtoName %>): Promise<PageDto<<%= DtoName %>>> {
@@ -72,6 +74,7 @@ export class <%= ControllerName %> {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get details of a specific <%= ClassName.toLowerCase() %> by ID' })
   @Auth([])
   @HttpCode(HttpStatus.OK)
   async <%= getSingleFunctionName %>(@UUIDParam('id') id: Uuid): Promise<<%= DtoName %>> {
@@ -81,6 +84,8 @@ export class <%= ControllerName %> {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: 'Update <%= ClassName.toLowerCase() %> details' })
+  @Auth([])
   @HttpCode(HttpStatus.ACCEPTED)
   <%= updateFunctionName %>(
     @UUIDParam('id') id: Uuid,
@@ -90,6 +95,8 @@ export class <%= ControllerName %> {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a <%= ClassName.toLowerCase() %>' })
+  @Auth([])
   @HttpCode(HttpStatus.ACCEPTED)
   async <%= deleteFunctionName %>(@UUIDParam('id') id: Uuid): Promise<void> {
     await this.<%= serviceName %>.<%= deleteFunctionName %>(id);

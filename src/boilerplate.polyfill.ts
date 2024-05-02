@@ -1,3 +1,4 @@
+/* eslint-disable canonical/no-use-extend-native */
 import 'source-map-support/register';
 
 import { compact, map } from 'lodash';

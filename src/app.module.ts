@@ -17,9 +17,11 @@ import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { CommentModule } from './modules/comment/comment.module';
 import { HealthCheckerModule } from './modules/health-checker/health-checker.module';
-import { PostModule } from './modules/post/post.module';
+import { MovieModule } from './modules/movie/movie.module';
 import { UserModule } from './modules/user/user.module';
+import { UserMovieModule } from './modules/user-movie/user-movie.module';
 import { ApiConfigService } from './shared/services/api-config.service';
 import { SharedModule } from './shared/shared.module';
 
@@ -27,7 +29,9 @@ import { SharedModule } from './shared/shared.module';
   imports: [
     AuthModule,
     UserModule,
-    PostModule,
+    MovieModule,
+    CommentModule,
+    UserMovieModule,
     ClsModule.forRoot({
       global: true,
       middleware: {

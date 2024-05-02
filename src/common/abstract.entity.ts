@@ -5,12 +5,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { LanguageCode } from '../constants';
 import { type Constructor } from '../types';
-import {
-  type AbstractDto,
-  type AbstractTranslationDto,
-} from './dto/abstract.dto';
+import { type AbstractDto } from './dto/abstract.dto';
 
 /**
  * Abstract Entity
@@ -32,12 +28,13 @@ export abstract class AbstractEntity<
   })
   createdAt!: Date;
 
+  @Column({ nullable: true })
+  createdBy?: string;
+
   @UpdateDateColumn({
     type: 'timestamp',
   })
   updatedAt!: Date;
-
-  translations?: AbstractTranslationEntity[];
 
   private dtoClass?: Constructor<DTO, [AbstractEntity, O?]>;
 
@@ -52,12 +49,4 @@ export abstract class AbstractEntity<
 
     return new dtoClass(this, options);
   }
-}
-
-export class AbstractTranslationEntity<
-  DTO extends AbstractTranslationDto = AbstractTranslationDto,
-  O = never,
-> extends AbstractEntity<DTO, O> {
-  @Column({ type: 'enum', enum: LanguageCode })
-  languageCode!: LanguageCode;
 }

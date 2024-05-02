@@ -4,54 +4,43 @@ unless_exists: true
 skip_if: <%= !blocks.includes('GetQuery') %>
 ---
 <%
+  GetQueryName = h.GetQueryName(name);
+  GetHandlerName = h.GetHandlerName(name);
 
- ClassName = h.ClassName(name);
- fieldName = h.changeCase.camel(ClassName);
+  EntityName = h.EntityName(name);
+  entityName = h.changeCase.camel(EntityName);
+  entityFileName = h.entityFileName(name);
 
- GetQueryName = h.GetQueryName(name);
- GetHandlerName = h.GetHandlerName(name);
+  notFoundExceptionFileName = h.notFoundExceptionFileName(name);
+  NotFoundExceptionName = h.NotFoundExceptionName(name);
+%>
 
- CreateDtoName = h.CreateDtoName(name);
- createDtoName = h.changeCase.camel(CreateDtoName);
- createDtoFileName = h.createDtoFileName(name);
-
- EntityName = h.EntityName(name);
- entityName = h.changeCase.camel(EntityName);
-
- EntityName = h.EntityName(name);
- entityName = h.changeCase.camel(EntityName);
- entityFileName = h.entityFileName(name);
-
- RepositoryName = h.RepositoryName(name);
- TranslationRepositoryName = h.TranslationRepositoryName(name);
- repositoryName = h.changeCase.camel(RepositoryName);
- translationRepositoryName = h.changeCase.camel(TranslationRepositoryName);
- repositoryFileName = h.repositoryFileName(name);
-
- TranslationEntityName = h.TranslationEntityName(name);
- TranslationDtoName = h.TranslationDtoName(name);
- translationEntityFileName = h.translationEntityFileName(name);
- translationRepositoryFileName = h.translationRepositoryFileName(name);
- translationEntityName = h.changeCase.camel(TranslationEntityName);
-
-%>import type { ICommand, IQueryHandler } from '@nestjs/cqrs';
+import type { IQuery, IQueryHandler } from '@nestjs/cqrs';
 import { QueryHandler } from '@nestjs/cqrs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { <%= RepositoryName %> } from '../<%= repositoryFileName %>';
+import { <%= EntityName %> } from '../<%= entityFileName %>';
+import { <%= NotFoundExceptionName %> } from '../exceptions/<%= notFoundExceptionFileName %>';
 
-export class <%= GetQueryName %> implements ICommand {
-  constructor(
-    public readonly userId: Uuid,
-  ) {}
+export class <%= GetQueryName %> implements IQuery {
+  constructor(public readonly id: Uuid) {}
 }
 
 @QueryHandler(<%= GetQueryName %>)
 export class <%= GetHandlerName %> implements IQueryHandler<<%= GetQueryName %>> {
-  constructor(private <%= repositoryName %>: <%= RepositoryName %>) {}
+  constructor(
+    @InjectRepository(<%= EntityName %>)
+    private <%= entityName %>Repository: Repository<<%= EntityName %>>,
+  ) {}
 
-  async execute(query: <%= GetQueryName %>) {
-    return this.<%= repositoryName %>.find({
-      userId: query.userId,
-    });
+  async execute(query: <%= GetQueryName %>): Promise<<%= EntityName %>> {
+    const <%= entityName %> = await this.<%= entityName %>Repository.findOneBy({ id: query.id });
+
+    if (!<%= entityName %>) {
+      throw new <%= NotFoundExceptionName %>();
+    }
+
+    return <%= entityName %>;
   }
 }

@@ -94,6 +94,19 @@ export class UserService {
     return items.toPageDto(pageMetaDto);
   }
 
+  async getUserMovies(userId: string): Promise<unknown> {
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.userMovies', 'userMovies')
+      .leftJoinAndSelect('userMovies.movie', 'movie')
+      .where('user.id = :userId', {
+        userId,
+      })
+      .orderBy('movie.createdAt', 'DESC');
+
+    return queryBuilder.getOne();
+  }
+
   async getUser(userId: Uuid): Promise<UserDto> {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
 

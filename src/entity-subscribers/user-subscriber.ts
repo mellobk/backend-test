@@ -7,6 +7,7 @@ import {
 
 import { generateHash } from '../common/utils';
 import { UserEntity } from '../modules/user/user.entity';
+import { ContextProvider } from './../providers/context.provider';
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
@@ -18,6 +19,9 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
     if (event.entity.password) {
       event.entity.password = generateHash(event.entity.password);
     }
+
+    const user = ContextProvider.getAuthUser();
+    event.entity.createdBy = user ? user.id : 'Anonymous';
   }
 
   beforeUpdate(event: UpdateEvent<UserEntity>): void {

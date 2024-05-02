@@ -4,136 +4,114 @@ unless_exists: true
 skip_if: <%= !blocks.includes('Service') %>
 ---
 <%
+  EntityName = h.EntityName(name);
+  entityName = h.changeCase.camel(EntityName);
+  entityFileName = h.entityFileName(name);
+  fieldName = h.changeCase.camel(ClassName);
 
- ClassName = h.ClassName(name);
- fieldName = h.changeCase.camel(ClassName);
+  ServiceName = h.ServiceName(name);
 
- DtoName = h.DtoName(name);
- dtoFileName = h.dtoFileName(name);
+  CreateCommandName = h.CreateCommandName(name);
+  createCommandFileName = h.createCommandFileName(name);
 
+  DtoName = h.DtoName(name);
+  dtoFileName = h.dtoFileName(name);
 
- CreateCommandName = h.CreateCommandName(name);
- createCommandFileName = h.createCommandFileName(name);
+  CreateDtoName = h.CreateDtoName(name);
+  createDtoFileName = h.createDtoFileName(name);
 
+  PageOptionsDtoName = h.PageOptionsDtoName(name);
+  pageOptionsDtoFileName = h.pageOptionsDtoFileName(name);
 
- EntityName = h.EntityName(name);
- entityName = h.changeCase.camel(EntityName);
- entityFileName = h.entityFileName(name);
+  UpdateDtoName = h.UpdateDtoName(name);
+  updateDtoFileName = h.updateDtoFileName(name);
 
- ServiceName = h.ServiceName(name);
+  NotFoundExceptionName = h.NotFoundExceptionName(name);
+  notFoundExceptionFileName = h.notFoundExceptionFileName(name);
 
- UpdateDtoName = h.UpdateDtoName(name);
- updateDtoFileName = h.updateDtoFileName(name);
- updateDtoName = h.changeCase.camel(UpdateDtoName);
+  createFunctionName = 'create' + ClassName;
+  updateFunctionName = 'update' + ClassName;
+  deleteFunctionName = 'delete' + ClassName;
+  getAllFunctionName = 'getAll' + ClassName;
+  getSingleFunctionName = 'getSingle' + ClassName;
 
- fileName = h.fileName(name);
+  GetQueryName = h.GetQueryName(name);
+  getQueryFileName = h.getQueryFileName(name);
+%>
 
- RepositoryName = h.RepositoryName(name);
- repositoryName = h.changeCase.camel(RepositoryName);
- repositoryFileName = h.repositoryFileName(name);
-
- NotFoundExceptionName = h.NotFoundExceptionName(name);
- notFoundExceptionFileName = h.notFoundExceptionFileName(name);
-
- createFunctionName = 'create' + ClassName;
- updateFunctionName = 'update' + ClassName;
- deleteFunctionName = 'delete' + ClassName;
- getAllFunctionName = 'getAll' + ClassName;
- getSingleFunctionName = 'getSingle' + ClassName;
- controllerName = moduleName + 'Controller';
- serviceName = moduleName + 'Service';
- CreateDtoName = h.CreateDtoName(name);
- createDtoFileName = h.createDtoFileName(name);
-
- PageOptionsDtoName = h.PageOptionsDtoName(name);
- pageOptionsDtoName = h.changeCase.camel(PageOptionsDtoName);
- pageOptionsDtoFileName = h.pageOptionsDtoFileName(name);
-
-%>import { Injectable } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { Injectable } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 
 import type { PageDto } from '../../common/dto/page.dto';
-import { ValidatorService } from '../../shared/services/validator.service';
+import { <%= EntityName %> } from './<%= entityFileName %>';
 import { <%= CreateCommandName %> } from './commands/<%= createCommandFileName %>';
 import type { <%= DtoName %> } from './dtos/<%= dtoFileName %>';
 import type { <%= PageOptionsDtoName %> } from './dtos/<%= pageOptionsDtoFileName %>';
-import { <%= NotFoundExceptionName %> } from './exceptions/<%= notFoundExceptionFileName %>';
-import type { <%= EntityName %> } from './<%= entityFileName %>';
-import { <%= RepositoryName %> } from './<%= repositoryFileName %>';
 import { <%= CreateDtoName %> } from './dtos/<%= createDtoFileName %>';
 import type { <%= UpdateDtoName %> } from './dtos/<%= updateDtoFileName %>';
+import { <%= NotFoundExceptionName %> } from './exceptions/<%= notFoundExceptionFileName %>';
+import { <%= GetQueryName %> } from './queries/<%= getQueryFileName %>';
 
 @Injectable()
 export class <%= ServiceName %> {
   constructor(
-    private <%= repositoryName %>: <%= RepositoryName %>,
-    private validatorService: ValidatorService,
+    @InjectRepository(<%= EntityName %>)
+    private <%= fieldName %>Repository: Repository<<%= EntityName %>>,
     private commandBus: CommandBus,
+    private queryBus: QueryBus,
   ) {}
 
   @Transactional()
-  <%= createFunctionName %>(<%= createDtoName %>: <%= CreateDtoName %>): Promise<<%= EntityName %>> {
+  <%= createFunctionName %>(
+    <%= h.changeCase.camel(CreateDtoName) %>: <%= CreateDtoName %>,
+  ): Promise<<%= EntityName %>> {
     return this.commandBus.execute<<%= CreateCommandName %>, <%= EntityName %>>(
-      new <%= CreateCommandName %>(<%= createDtoName %>),
+      new <%= CreateCommandName %>(<%= h.changeCase.camel(CreateDtoName) %>),
     );
   }
 
   async <%= getAllFunctionName %>(
-    <%= pageOptionsDtoName %>: <%= PageOptionsDtoName %>,
+    <%= h.changeCase.camel(PageOptionsDtoName) %>: <%= PageOptionsDtoName %>,
   ): Promise<PageDto<<%= DtoName %>>> {
-    const queryBuilder = this.<%= repositoryName %>
-      .createQueryBuilder('<%= fieldName %>')
-      .leftJoinAndSelect('<%= fieldName %>.translations', '<%= fieldName %>Translation');
-    const [items, pageMetaDto] = await queryBuilder.paginate(<%= pageOptionsDtoName %>);
+    const queryBuilder = this.<%= fieldName %>Repository.createQueryBuilder('<%= fieldName %>');
+    const [items, pageMetaDto] = await queryBuilder.paginate(<%= h.changeCase.camel(PageOptionsDtoName) %>);
 
     return items.toPageDto(pageMetaDto);
   }
 
   async <%= getSingleFunctionName %>(id: Uuid): Promise<<%= EntityName %>> {
-    const queryBuilder = this.<%= repositoryName %>
-      .createQueryBuilder('<%= fieldName %>')
-      .where('<%= fieldName %>.id = :id', { id });
-
-    const <%= entityName %> = await queryBuilder.getOne();
-
-    if (!<%= entityName %>) {
-      throw new <%= NotFoundExceptionName %>();
-    }
-
-    return <%= entityName %>;
+    return this.queryBus.execute<<%= GetQueryName %>, <%= EntityName %>>(
+      new <%= GetQueryName %>(id),
+    );
   }
 
   async <%= updateFunctionName %>(
     id: Uuid,
-    <%= updateDtoName %>: <%= UpdateDtoName %>,
+    <%= h.changeCase.camel(UpdateDtoName) %>: <%= UpdateDtoName %>,
   ): Promise<void> {
-    const queryBuilder = this.<%= repositoryName %>
+    const queryBuilder = this.<%= fieldName %>Repository
       .createQueryBuilder('<%= fieldName %>')
       .where('<%= fieldName %>.id = :id', { id });
 
-    const <%= entityName %> = await queryBuilder.getOne();
+    const <%= fieldName %>Entity = await queryBuilder.getOne();
 
-    if (!<%= entityName %>) {
+    if (!<%= fieldName %>Entity) {
       throw new <%= NotFoundExceptionName %>();
     }
 
-    this.<%= repositoryName %>.merge(<%= entityName %>, <%= updateDtoName %>);
+    this.<%= fieldName %>Repository.merge(<%= fieldName %>Entity, <%= h.changeCase.camel(UpdateDtoName) %>);
 
-    await this.<%= repositoryName %>.save(<%= updateDtoName %>);
+    await this.<%= fieldName %>Repository.save(<%= fieldName %>Entity);
   }
 
   async <%= deleteFunctionName %>(id: Uuid): Promise<void> {
-    const queryBuilder = this.<%= repositoryName %>
-      .createQueryBuilder('<%= fieldName %>')
-      .where('<%= fieldName %>.id = :id', { id });
+    const deleteResult = await this.<%= fieldName %>Repository.softDelete(id);
 
-    const <%= entityName %> = await queryBuilder.getOne();
-
-    if (!<%= entityName %>) {
+    if (deleteResult.affected === 0) {
       throw new <%= NotFoundExceptionName %>();
     }
-
-    await this.<%= repositoryName %>.remove(<%= entityName %>);
   }
 }

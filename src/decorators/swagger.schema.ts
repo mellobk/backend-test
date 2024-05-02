@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable import/no-duplicates */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/ban-types,@typescript-eslint/no-unsafe-argument */
 import { type Type } from '@nestjs/common';
 import { applyDecorators, UseInterceptors } from '@nestjs/common';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ApiProperty, type ApiPropertyOptions } from '@nestjs/swagger';
 
 import { getVariableName } from '../common/utils';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import {

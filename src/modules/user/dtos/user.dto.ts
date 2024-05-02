@@ -1,43 +1,40 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
+import { ApiProperty } from '@nestjs/swagger';
+
 import { AbstractDto } from '../../../common/dto/abstract.dto';
 import { RoleType } from '../../../constants';
-import {
-  BooleanFieldOptional,
-  EmailFieldOptional,
-  EnumFieldOptional,
-  PhoneFieldOptional,
-  StringFieldOptional,
-} from '../../../decorators';
+import { BooleanFieldOptional } from '../../../decorators';
 import { type UserEntity } from '../user.entity';
 
-// TODO, remove this class and use constructor's second argument's type
-export type UserDtoOptions = Partial<{ isActive: boolean }>;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export interface UserDtoOptions {}
 
 export class UserDto extends AbstractDto {
-  @StringFieldOptional({ nullable: true })
+  @ApiProperty({ nullable: true })
   firstName?: string | null;
 
-  @StringFieldOptional({ nullable: true })
+  @ApiProperty({ nullable: true })
   lastName?: string | null;
 
-  @StringFieldOptional({ nullable: true })
+  @ApiProperty({ nullable: true })
   username!: string;
 
-  @EnumFieldOptional(() => RoleType)
+  @ApiProperty()
   role?: RoleType;
 
-  @EmailFieldOptional({ nullable: true })
+  @ApiProperty({ nullable: true })
   email?: string | null;
 
-  @StringFieldOptional({ nullable: true })
+  @ApiProperty({ nullable: true })
   avatar?: string | null;
 
-  @PhoneFieldOptional({ nullable: true })
+  @ApiProperty({ nullable: true })
   phone?: string | null;
 
   @BooleanFieldOptional()
   isActive?: boolean;
 
-  constructor(user: UserEntity, options?: UserDtoOptions) {
+  constructor(user: UserEntity, _options?: UserDtoOptions) {
     super(user);
     this.firstName = user.firstName;
     this.lastName = user.lastName;
@@ -45,6 +42,5 @@ export class UserDto extends AbstractDto {
     this.email = user.email;
     this.avatar = user.avatar;
     this.phone = user.phone;
-    this.isActive = options?.isActive;
   }
 }

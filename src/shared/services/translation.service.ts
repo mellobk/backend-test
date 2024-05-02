@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { isArray, isString, map } from 'lodash';
 import { I18nService, type TranslateOptions } from 'nestjs-i18n';
